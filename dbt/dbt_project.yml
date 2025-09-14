@@ -1,0 +1,36 @@
+name: 'stock_data_backtesting'
+version: '1.0.0'
+config-version: 2
+profile: 'stock_data_backtesting'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+
+models:
+  stock_data_backtesting:
+    # Default materialization for the entire project
+    +materialized: table
+    
+    # Configurations for models in the 'staging' layer
+    # These models perform light cleaning and are materialized as views
+    staging:
+      +materialized: view
+    
+    # Configurations for models in the 'marts' layer
+    # These tables are for final analysis and reporting
+    marts:
+      +materialized: table
+      +schema: marts
+    
+    # Configurations for models in the 'backtest' layer
+    # Incremental models are key for backtesting to process only new data
+    backtest:
+      +materialized: incremental
+      +unique_key: ['date', 'ticker']
+      +on_schema_change: 'fail' # Prevents pipeline failures from schema changes

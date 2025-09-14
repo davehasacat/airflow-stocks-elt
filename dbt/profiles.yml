@@ -7,6 +7,6 @@ stock_data_backtesting:
       port: 5432
       user: postgres
       password: postgres
-      dbname: postgres_db
+      dbname: postgres_dwh
       schema: public
       threads: 4
