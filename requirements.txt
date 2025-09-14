@@ -3,6 +3,8 @@
 apache-airflow-providers-amazon
 apache-airflow-providers-postgres
 
+astronomer-cosmos
+
 dbt-postgres
 
 minio

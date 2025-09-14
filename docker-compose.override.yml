@@ -1,4 +1,7 @@
 services:
+  scheduler:
+    volumes:
+      - ./dbt:/usr/local/airflow/dbt
   postgres:
     ports:
       - "5433:5432"
