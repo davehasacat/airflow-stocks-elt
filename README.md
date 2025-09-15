@@ -8,33 +8,32 @@ Tech Stack
 
 This project is built with the following tools and technologies:
 
-    Orchestration: Apache Airflow
-        Used to schedule, execute, and monitor data pipelines (DAGs).
+Orchestration: Apache Airflow
+    Used to schedule, execute, and monitor data pipelines (DAGs).
 
-    Containerization: Docker
-        Used to create a consistent, isolated, and reproducible environment for all services.
+Containerization: Docker
+    Used to create a consistent, isolated, and reproducible environment for all services.
 
-    Development CLI: Astro CLI
-        Used to streamline local development, testing, and deployment of the Airflow environment.
+Development CLI: Astro CLI
+    Used to streamline local development, testing, and deployment of the Airflow environment.
 
-    Object Storage: Minio
-        Serves as an S3-compatible object storage solution for raw data, files, and other artifacts.
+Object Storage: Minio
+    Serves as an S3-compatible object storage solution for raw data, files, and other artifacts.
 
-    Data Warehouse: Postgres
-        Acts as the central data warehouse where transformed and structured data is stored for analysis.
+Data Warehouse: Postgres
+    Acts as the central data warehouse where transformed and structured data is stored for analysis.
 
-    Transformation: dbt (Data Build Tool)
-        Used to transform raw data in the warehouse into clean, reliable, and analytics-ready datasets using SQL.
-
-Deploy Your Project Locally
-===========================
+Transformation: dbt (Data Build Tool)
+    Used to transform raw data in the warehouse into clean, reliable, and analytics-ready datasets using SQL.
 
 Getting Started
+===========================
 
-    Start the environment:
-Bash
+Start the environment:
 
-astro dev start
+    Bash
+    
+    astro dev start
 
 Create the Minio Bucket:
     Navigate to the Minio console at http://localhost:9001.
