@@ -10,16 +10,14 @@ airflow:
     - conn_id: postgres_dwh
       conn_type: postgres
       conn_host: postgres_dwh
-      conn_schema: public
       conn_login: postgres
       conn_password: postgres
       conn_port: 5432
     - conn_id: minio_s3
       conn_type: aws
-      conn_host: minio
+      conn_login: minioadmin
+      conn_password: minioadmin
       conn_extra:
-        aws_access_key_id: minioadmin
-        aws_secret_access_key: minioadmin
         endpoint_url: http://minio:9000
   pools:
     - pool_name:

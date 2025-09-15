@@ -1,8 +1,9 @@
 services:
-# add dbt folder to airflolw schedulers volumes
   scheduler:
-    volumes:
+    volumes:  # add dbt folder to airflolw schedulers volumes
       - ./dbt:/usr/local/airflow/dbt
+    networks:  ## add scheduler to same network
+      - stocks-etl_default
 # create custom services
   postgres_dwh:
     image: postgres:12
