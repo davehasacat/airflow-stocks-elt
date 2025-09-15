@@ -1,10 +1,20 @@
 services:
+# add dbt folder to airflolw schedulers volumes
   scheduler:
     volumes:
       - ./dbt:/usr/local/airflow/dbt
-  postgres:
+# create custom services
+  postgres_dwh:
+    image: postgres:12
+    container_name: postgres_dwh
     ports:
-      - "5433:5432"
+      - "5433:5432"  # create host port on 5433 as default postgres container create by airflow uses 5432
+    environment:
+      POSTGRES_DB: postgres_dwh
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - stocks-etl_default  # add services to same network
   minio:
     image: minio/minio
     container_name: minio
@@ -17,6 +27,14 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    networks:
+      - stocks-etl_default  # add services to same network
+# add minio folder to airflow after connection is created
 volumes:
   minio_data:
     driver: local
+# create network for all services
+networks:
+  stocks-etl_default:
+    name: stocks-etl_default
+    driver: bridge

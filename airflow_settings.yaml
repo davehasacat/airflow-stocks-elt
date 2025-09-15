@@ -9,7 +9,7 @@ airflow:
   connections:
     - conn_id: postgres_dwh
       conn_type: postgres
-      conn_host: postgres
+      conn_host: postgres_dwh
       conn_schema: public
       conn_login: postgres
       conn_password: postgres
