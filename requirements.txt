@@ -9,3 +9,5 @@ astronomer-cosmos
 dbt-postgres
 
 minio
+
+requests

@@ -35,13 +35,13 @@ Start the environment:
 
 Create the Minio Bucket:
 
-- Navigate to the Minio console at http://localhost:9001.
+- Navigate to the Minio console at <http://localhost:9001>.
 - Log in with the credentials from your .env file.
 - Create a new bucket named test.
 
 Run the Connection Test:
 
-- Navigate to the Airflow UI at http://localhost:8080.
+- Navigate to the Airflow UI at <http://localhost:8080>.
 - Un-pause and trigger the full_stack_connection_test DAG to verify all services are connected.
 
 Documentation and Links
