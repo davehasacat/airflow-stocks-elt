@@ -14,9 +14,16 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
     tags=["ingestion", "alphavantage"],
 )
 def ingest_stocks_dag():
+    """
+    Extracts daily stock data from the Alpha Vantage API, lands the raw
+    JSON file in Minio, and then triggers the loading DAG.
+    """
     
     @task(retries=2)
     def fetch_and_save_daily_data() -> str:
+        """
+        Fetches stock data for a given ticker and saves it to a local temp file.
+        """
         TICKER = os.getenv("TICKER", "GOOGL")
         api_key = os.getenv("ALPHA_ADVANTAGE_API_KEY")
         output_path = f"/tmp/{TICKER}_daily.json"
@@ -51,7 +58,7 @@ def ingest_stocks_dag():
         """
         Uploads the given file to Minio and returns the S3 key (filename).
         """
-        S3_CONN_ID = os.getenv("S3_CONN_ID", "minio_s3")
+        S3_CONN_ID = os.getenv("S3_CONN_ID")
         BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
         s3_key = os.path.basename(local_file_path)
 
@@ -63,22 +70,18 @@ def ingest_stocks_dag():
             replace=True
         )
         print(f"Successfully uploaded {s3_key} to Minio bucket {BUCKET_NAME}.")
-
         return s3_key
 
     trigger_load_dag = TriggerDagRunOperator(
         task_id="trigger_load_dag",
         trigger_dag_id="load_stocks_from_minio",
         wait_for_completion=False,
-        # This Jinja template pulls the return value (the s3_key)
-        # from the 'upload_to_minio' task.
+        # Pass the filename from the upload task to the triggered DAG
         conf={"s3_key": "{{ task_instance.xcom_pull(task_ids='upload_to_minio') }}"}
     )
 
-    # --- Task Chaining ---
     local_path = fetch_and_save_daily_data()
-    # We assign the task object to a variable to set the dependency.
-    upload_task = upload_to_minio(local_file_path=local_path)
-    upload_task >> trigger_load_dag
+    s3_key_from_upload = upload_to_minio(local_file_path=local_path)
+    s3_key_from_upload >> trigger_load_dag
 
 ingest_stocks_dag()

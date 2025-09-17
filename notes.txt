@@ -30,4 +30,15 @@ TriggerDagRunOperator.partial(...):
     Purpose: This is the core function for Dynamic Task Mapping. It takes a list as input and
     creates one parallel task instance for each item in that list, using the .partial()
     template we defined.
+
+How They Work Together
+
+    Your stocks_ingest_controller.py DAG acts as the manager. Its TriggerDagRunOperator.expand() function
+    correctly iterates through your TICKERS_TO_INGEST list and generates a separate trigger for each ticker.
+
+    Crucially, the conf=[{"ticker": ticker} for ticker in TICKERS_TO_INGEST] line creates a unique configuration
+    for each trigger, passing the specific ticker name.
+
+    Your ingest_stocks.py DAG is correctly set up as a "worker" DAG. Its params={"ticker": ...} definition allows it
+    to accept the ticker value that the controller passes into its configuration.
     
