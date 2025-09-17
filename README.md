@@ -12,7 +12,8 @@ This version of the project establishes a complete, end-to-end pipeline for a si
 
 The ELT process is orchestrated by three modular and event-driven Airflow DAGs that form a seamless, automated workflow.
 
-![Pipeline Architecture Diagram](images/stocks_elt_pipeline.png)
+#### Pipeline Architecture Diagram
+<img width="2057" height="245" alt="stocks_elt_pipeline" src="https://github.com/user-attachments/assets/c1a5e29b-8c1b-4c8b-a9a7-d2a93e46b1fc" />
 
 1. **`ingest_stocks`**: Extracts daily data from the Alpha Vantage API, lands the raw JSON file in Minio object storage, and then automatically triggers the `load_stocks_from_minio` DAG.
 2. **`load_stocks_from_minio`**: Waits for the file to appear in Minio, parses the raw JSON, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
@@ -22,7 +23,8 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs t
 
 The screenshot below shows a successful, end-to-end run of the entire orchestrated pipeline in the Airflow UI, demonstrating the successful execution of all four DAGs.
 
-![Successful Airflow Pipeline Run](images/stocks_elt_dag_run.png)
+#### Successful Airflow Pipeline Run
+<img width="1848" height="1080" alt="stocks_elt_dag_run" src="https://github.com/user-attachments/assets/d51d0652-a736-418f-ae50-37f1dca887c3" />
 
 ---
 
