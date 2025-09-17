@@ -1,4 +1,4 @@
-# Airflow Stocks ETL Project
+# Airflow Stocks ELT Project
 
 This project is a complete, containerized ELT (Extract, Load, Transform) environment designed for processing stock data. It uses a modern data stack to orchestrate data pipelines, manage transformations, and store data, providing a robust foundation for financial analysis and backtesting.
 
