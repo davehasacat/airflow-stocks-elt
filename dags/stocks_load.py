@@ -7,6 +7,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from airflow.providers.common.sql.operators.sql import SQLTableCheckOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 @dag(
     dag_id="load_stocks_from_minio",
@@ -17,36 +18,30 @@ from airflow.providers.common.sql.operators.sql import SQLTableCheckOperator
 )
 def load_stocks_dag(**kwargs):
     """
-    This DAG is event-driven. It waits for a file (specified by the
-    triggering DAG or a default) to appear in Minio, loads it into
-    Postgres, and runs a data quality check.
+    This DAG is event-driven. It waits for a file to appear in Minio,
+    loads it into Postgres, runs a data quality check, and then triggers
+    the dbt transformation DAG.
     """
-
     # --- Configuration ---
-    S3_CONN_ID = os.getenv("S3_CONN_ID")
+    S3_CONN_ID = os.getenv("S3_CONN_ID", "minio_s3")
     POSTGRES_CONN_ID = os.getenv("POSTGRES_CONN_ID", "postgres_dwh")
     BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
     TABLE_NAME = "alpha_vantage_daily"
-    
-    # This now dynamically reads the filename from the DAG run configuration.
-    # It safely defaults to 'GOOGL_daily.json' for manual test runs.
     dag_run = kwargs.get("dag_run")
     s3_key = dag_run.conf.get('s3_key', 'GOOGL_daily.json') if dag_run else 'GOOGL_daily.json'
 
-    # The S3KeySensor acts as the "wait" mechanism.
     wait_for_file_in_minio = S3KeySensor(
         task_id="wait_for_file_in_minio",
         bucket_name=BUCKET_NAME,
-        bucket_key=s3_key, # The sensor waits for the dynamic filename
+        bucket_key=s3_key,
         aws_conn_id=S3_CONN_ID,
         mode='poke',
-        poke_interval=30, # Check more frequently
-        timeout=600 # Wait up to 10 minutes
+        poke_interval=30,
+        timeout=600
     )
 
     @task
     def load_minio_json_to_postgres():
-        # The core loading logic now uses the s3_key defined at the DAG level
         s3_hook = S3Hook(aws_conn_id=S3_CONN_ID)
         json_data_string = s3_hook.read_key(key=s3_key, bucket_name=BUCKET_NAME)
         data = json.loads(json_data_string)
@@ -89,7 +84,13 @@ def load_stocks_dag(**kwargs):
         }
     )
 
+    trigger_dbt_dag = TriggerDagRunOperator(
+        task_id="trigger_dbt_dag",
+        trigger_dag_id="dbt_run_models",
+        wait_for_completion=False,
+    )
+
     # --- Task Chaining ---
-    wait_for_file_in_minio >> load_minio_json_to_postgres() >> check_table_has_rows
+    wait_for_file_in_minio >> load_minio_json_to_postgres() >> check_table_has_rows >> trigger_dbt_dag
 
 load_stocks_dag()
