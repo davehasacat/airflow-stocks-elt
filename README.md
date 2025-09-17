@@ -6,13 +6,24 @@ This project is a complete, containerized ELT (Extract, Load, Transform) environ
 
 This version of the project establishes a complete, end-to-end pipeline for a single stock ticker. It serves as a proof of concept for the architecture and technology stack. Future versions will focus on scaling the pipeline to handle multiple tickers, implementing more complex transformations, and adding advanced data quality checks and monitoring.
 
+---
+
 ## Pipeline Architecture
 
-The ELT process is orchestrated by three modular and event-driven Airflow DAGs:
+The ELT process is orchestrated by three modular and event-driven Airflow DAGs that form a seamless, automated workflow.
 
-1. **`ingest_stocks`**: This DAG extracts daily data from the Alpha Vantage API, lands the raw JSON file in Minio object storage, and then automatically triggers the `load_stocks_from_minio` DAG.
-2. **`load_stocks_from_minio`**: This DAG is triggered by the ingest pipeline. It waits for the specified file to appear in Minio, parses the raw JSON into a structured format, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
-3. **`dbt_run_models`**: This DAG is triggered by the load pipeline. It runs the dbt models to transform the raw data into clean, analytics-ready tables.
+1. **`ingest_stocks`**: Extracts daily data from the Alpha Vantage API, lands the raw JSON file in Minio object storage, and then automatically triggers the `load_stocks_from_minio` DAG.
+2. **`load_stocks_from_minio`**: Waits for the file to appear in Minio, parses the raw JSON, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
+3. **`dbt_run_models`**: Runs the dbt models to transform the raw data into clean, analytics-ready tables (views).
+
+### Proof of Success
+
+The screenshot below shows a successful, end-to-end run of the entire orchestrated pipeline in the Airflow UI, demonstrating the successful execution of all four DAGs.
+
+#### Successful Airflow Pipeline Run
+<img width="1848" height="1080" alt="Capture" src="https://github.com/user-attachments/assets/46bcf2fb-f9e6-4fb6-a561-b95d3d54463e" />
+
+---
 
 ## Tech Stack
 
@@ -29,6 +40,8 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs:
 * **Transformation**: **dbt (Data Build Tool)**
   * Used to transform raw data in the warehouse into clean, reliable, and analytics-ready datasets using SQL.
 
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -39,7 +52,7 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs:
 
 ### Configuration
 
-1. **Environment Variables**: Create a file named `.env` in the project root. Copy the contents of `.env.example` into it and fill in your `ALPHA_ADVANTAGE_API_KEY`. The rest of the variables are pre-configured for the local environment.
+1. **Environment Variables**: Create a file named `.env` in the project root. Copy the contents of `.env.example` (if you've created one) into it and fill in your `ALPHA_ADVANTAGE_API_KEY`. The rest of the variables are pre-configured for the local environment.
 2. **dbt Profile**: The `dbt/profiles.yml` file is configured to read credentials from the `.env` file. No changes are needed.
 
 ### Running the Project
@@ -59,6 +72,16 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs:
     * Navigate to the Airflow UI at `http://localhost:8080`.
     * Log in with `admin` / `admin`.
     * Un-pause the `ingest_stocks` DAG and trigger it with a manual run. This will kick off the entire automated pipeline.
+
+---
+
+## Future Work & Scalability
+
+This proof of concept serves as a strong foundation. The next steps for expanding this project include:
+
+ [ ] **Scale Ingestion with Airflow Params**: Parameterize the DAGs to accept a list of tickers, allowing for the ingestion of hundreds of stocks in parallel using Dynamic Task Mapping.
+ [ ] **Implement an Incremental Loading Strategy**: Shift from a "truncate and load" pattern to an "append and merge" pattern to preserve historical data.
+ [ ] **Build Out dbt Marts Layer**: Create final analytical tables, such as weekly/monthly aggregations and technical indicators (e.g., moving averages).
 
 ## Documentation
 
