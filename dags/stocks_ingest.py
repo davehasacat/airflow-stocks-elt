@@ -48,7 +48,10 @@ def ingest_stocks_dag():
 
     @task
     def upload_to_minio(local_file_path: str) -> str:
-        S3_CONN_ID = os.getenv("S3_CONN_ID")
+        """
+        Uploads the given file to Minio and returns the S3 key (filename).
+        """
+        S3_CONN_ID = os.getenv("S3_CONN_ID", "minio_s3")
         BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
         s3_key = os.path.basename(local_file_path)
 
@@ -60,17 +63,22 @@ def ingest_stocks_dag():
             replace=True
         )
         print(f"Successfully uploaded {s3_key} to Minio bucket {BUCKET_NAME}.")
+
         return s3_key
 
     trigger_load_dag = TriggerDagRunOperator(
         task_id="trigger_load_dag",
         trigger_dag_id="load_stocks_from_minio",
         wait_for_completion=False,
+        # This Jinja template pulls the return value (the s3_key)
+        # from the 'upload_to_minio' task.
         conf={"s3_key": "{{ task_instance.xcom_pull(task_ids='upload_to_minio') }}"}
     )
 
+    # --- Task Chaining ---
     local_path = fetch_and_save_daily_data()
-    s3_key_from_upload = upload_to_minio(local_file_path=local_path)
-    s3_key_from_upload >> trigger_load_dag
+    # We assign the task object to a variable to set the dependency.
+    upload_task = upload_to_minio(local_file_path=local_path)
+    upload_task >> trigger_load_dag
 
 ingest_stocks_dag()

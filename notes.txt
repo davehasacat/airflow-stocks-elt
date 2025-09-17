@@ -1,0 +1,33 @@
+
+
+
+import pendulum
+
+ Pendulum is the official date and time library recommended by Airflow.
+ It makes handling timezones, start dates, and schedules much easier and
+ less error-prone than Python's built-in datetime library. You will almost always
+ use this to set a start_date for a DAG.
+
+
+catchup=False: This is an important setting. If your DAG was paused for several days,
+catchup=True would cause Airflow to run a separate DAG for each missed day. For this
+use case, we only want it to run for the most recent day, so we set it to False
+
+TriggerDagRunOperator.partial(...):
+
+    Purpose: This creates a template or a "partial" task. Instead of creating just one
+    TriggerDagRunOperator, we are defining a blueprint that will be used to create many.
+
+    task_id="trigger_ingest_dag": This sets the base name for all the parallel tasks that
+    will be created. In the Airflow UI, you'll see tasks named trigger_ingest_dag_[AAPL],
+    trigger_ingest_dag_[MSFT], etc.
+
+    trigger_dag_id="ingest_stocks": This tells the operator which DAG to trigger. It must
+    exactly match the dag_id of your stocks_ingest.py DAG.
+
+.expand(...):
+
+    Purpose: This is the core function for Dynamic Task Mapping. It takes a list as input and
+    creates one parallel task instance for each item in that list, using the .partial()
+    template we defined.
+    
