@@ -17,8 +17,13 @@ models:
     # Default materialization for the entire project
     +materialized: table
     
+    # Configurations for models in the 'source' layer
+    # These models perform light cleaning (i.e. type casting) and are materialized as views
+    source:
+      +materialized: view
+    
     # Configurations for models in the 'staging' layer
-    # These models perform light cleaning and are materialized as views
+    # These models contain the bulk of transformations and are materialized as views
     staging:
       +materialized: view
     

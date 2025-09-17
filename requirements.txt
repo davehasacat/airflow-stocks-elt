@@ -3,11 +3,12 @@
 apache-airflow-providers-amazon
 apache-airflow-providers-common-sql
 apache-airflow-providers-postgres
-
 astronomer-cosmos
-
 dbt-postgres
-
 minio
 
 requests
+pandas
+s3fs
+sqlalchemy
+psycopg2-binary

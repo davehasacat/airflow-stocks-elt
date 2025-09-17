@@ -4,87 +4,73 @@ import requests
 import json
 from airflow.decorators import dag, task
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
-"""
-this DAG is designed to pull in data for only one ticker.
-this is to ensure our tech stack is working as expected.
-data transformations will be completed and tested, then i'll be
-incorporating a for loop to pull in data for all tickers
-"""
 @dag(
-    dag_id="ingest_stock_data",
+    dag_id="ingest_stocks",
     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
     schedule="@daily",
     catchup=False,
     tags=["ingestion", "alphavantage"],
 )
-def ingest_stock_data_dag():
-    """
-    This DAG fetches daily stock data from Alpha Vantage, saves it as a JSON
-    file, and then uploads that file to Minio S3 storage.
-    """
-
-    @task
+def ingest_stocks_dag():
+    
+    @task(retries=2)
     def fetch_and_save_daily_data() -> str:
-        """
-        Fetches stock data and saves it to a local JSON file.
-        Returns the path to the created file.
-        """
-        TICKER = "GOOGLE"
-        # Using Airflow's temporary directory for intermediate files
+        TICKER = os.getenv("TICKER", "GOOGL")
+        api_key = os.getenv("ALPHA_ADVANTAGE_API_KEY")
         output_path = f"/tmp/{TICKER}_daily.json"
 
-        api_key = os.getenv("ALPHA_ADVANTAGE_API_KEY")
         if not api_key:
             raise ValueError("ALPHA_ADVANTAGE_API_KEY environment variable not set.")
 
         url = (
             "https://www.alphavantage.co/query?"
-            "function=TIME_SERIES_DAILY_ADJUSTED&"
+            "function=TIME_SERIES_DAILY&"
             f"symbol={TICKER}&"
             "outputsize=full&"
             f"apikey={api_key}"
         )
         
-        print(f"Fetching data for {TICKER} from Alpha Vantage...")
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-        print("Data fetched successfully.")
 
-        print(f"Saving data temporarily to {output_path}...")
+        if "Time Series (Daily)" not in data:
+            print("API did not return Time Series Data. Full response:")
+            print(data)
+            raise ValueError("Alpha Vantage API call did not return the expected time series data.")
+
         with open(output_path, "w") as f:
             json.dump(data, f)
-        print("Data saved successfully.")
-
+        
         return output_path
 
     @task
-    def upload_to_minio(local_file_path: str):
-        """
-        Uploads the given file to a specified bucket in Minio.
-        """
-        # --- Configuration ---
-        S3_CONN_ID = "minio_s3"
-        BUCKET_NAME = "test"
-        # Use the filename from the local path as the S3 key
+    def upload_to_minio(local_file_path: str) -> str:
+        S3_CONN_ID = os.getenv("S3_CONN_ID")
+        BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
         s3_key = os.path.basename(local_file_path)
 
-        print(f"Uploading {local_file_path} to Minio bucket '{BUCKET_NAME}' as '{s3_key}'...")
-
-        # Use the S3Hook to interact with Minio
         s3_hook = S3Hook(aws_conn_id=S3_CONN_ID)
         s3_hook.load_file(
             filename=local_file_path,
             key=s3_key,
             bucket_name=BUCKET_NAME,
-            replace=True  # Overwrite the file if it already exists
+            replace=True
         )
-        print("Upload successful.")
+        print(f"Successfully uploaded {s3_key} to Minio bucket {BUCKET_NAME}.")
+        return s3_key
 
-    # --- Task Chaining ---
-    # The output of the first task (the file path) is passed to the second task
+    trigger_load_dag = TriggerDagRunOperator(
+        task_id="trigger_load_dag",
+        trigger_dag_id="load_stocks_from_minio",
+        wait_for_completion=False,
+        conf={"s3_key": "{{ task_instance.xcom_pull(task_ids='upload_to_minio') }}"}
+    )
+
     local_path = fetch_and_save_daily_data()
-    upload_to_minio(local_file_path=local_path)
+    s3_key_from_upload = upload_to_minio(local_file_path=local_path)
+    s3_key_from_upload >> trigger_load_dag
 
-ingest_stock_data_dag()
+ingest_stocks_dag()
