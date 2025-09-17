@@ -82,9 +82,9 @@ The screenshot below shows a successful, end-to-end run of the entire orchestrat
 
 This proof of concept serves as a strong foundation. The next steps for expanding this project include:
 
- -[ ] **Scale Ingestion with Airflow Params**: Parameterize the DAGs to accept a list of tickers, allowing for the ingestion of hundreds of stocks in parallel using Dynamic Task Mapping.
- -[ ] **Implement an Incremental Loading Strategy**: Shift from a "truncate and load" pattern to an "append and merge" pattern to preserve historical data.
- -[ ] **Build Out dbt Marts Layer**: Create final analytical tables, such as weekly/monthly aggregations and technical indicators (e.g., moving averages).
+ - [ ] **Scale Ingestion with Airflow Params**: Parameterize the DAGs to accept a list of tickers, allowing for the ingestion of hundreds of stocks in parallel using Dynamic Task Mapping.
+ - [ ] **Implement an Incremental Loading Strategy**: Shift from a "truncate and load" pattern to an "append and merge" pattern to preserve historical data.
+ - [ ] **Build Out dbt Marts Layer**: Create final analytical tables, such as weekly/monthly aggregations and technical indicators (e.g., moving averages).
 
 ## Documentation
 
