@@ -4,10 +4,9 @@ FROM astrocrpublic.azurecr.io/runtime:3.0-10
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-# Copy your project files first.
+# Copy project files
 COPY . .
 
-# --- NEW, CORRECTED SECTION ---
 # Temporarily switch to the root user to create directories
 USER root
 
