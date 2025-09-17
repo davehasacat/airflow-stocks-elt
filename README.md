@@ -1,49 +1,61 @@
-Airflow Stock Exchange ETL
-===========================
+# Airflow Stocks ETL Project
 
-This project is a complete, containerized ETL (Extract, Transform, Load) environment designed for processing stock data. It uses a modern data stack to orchestrate data pipelines, manage transformations, and store data.
+This project is a complete, containerized ELT (Extract, Load, Transform) environment designed for processing stock data. It uses a modern data stack to orchestrate data pipelines, manage transformations, and store data, providing a robust foundation for financial analysis and backtesting.
 
-Tech Stack
+## Version: 1.0 (Proof of Concept)
 
-This project is built with the following tools and technologies:
+This version of the project establishes a complete, end-to-end pipeline for a single stock ticker. It serves as a proof of concept for the architecture and technology stack. Future versions will focus on scaling the pipeline to handle multiple tickers, implementing more complex transformations, and adding advanced data quality checks and monitoring.
 
-Orchestration: Apache Airflow
-Used to schedule, execute, and monitor data pipelines (DAGs).
+## Pipeline Architecture
 
-Containerization: Docker
-Used to create a consistent, isolated, and reproducible environment for all services.
+The ELT process is orchestrated by three modular and event-driven Airflow DAGs:
 
-Development CLI: Astro CLI
-Used to streamline local development, testing, and deployment of the Airflow environment.
+1. **`ingest_stocks`**: This DAG extracts daily data from the Alpha Vantage API, lands the raw JSON file in Minio object storage, and then automatically triggers the `load_stocks_from_minio` DAG.
+2. **`load_stocks_from_minio`**: This DAG is triggered by the ingest pipeline. It waits for the specified file to appear in Minio, parses the raw JSON into a structured format, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
+3. **`dbt_run_models`**: This DAG is triggered by the load pipeline. It runs the dbt models to transform the raw data into clean, analytics-ready tables.
 
-Object Storage: Minio
-Serves as an S3-compatible object storage solution for raw data, files, and other artifacts.
+## Tech Stack
 
-Data Warehouse: Postgres
-Acts as the central data warehouse where transformed and structured data is stored for analysis.
+* **Orchestration**: **Apache Airflow**
+  * Used to schedule, execute, and monitor the data pipelines (DAGs).
+* **Containerization**: **Docker**
+  * Used to create a consistent, isolated, and reproducible environment for all services.
+* **Development CLI**: **Astro CLI**
+  * Used to streamline local development and testing of the Airflow environment.
+* **Object Storage**: **Minio**
+  * Serves as an S3-compatible object storage solution for raw data files.
+* **Data Warehouse**: **Postgres**
+  * Acts as the central data warehouse where both raw and transformed data is stored.
+* **Transformation**: **dbt (Data Build Tool)**
+  * Used to transform raw data in the warehouse into clean, reliable, and analytics-ready datasets using SQL.
 
-Transformation: dbt (Data Build Tool)
-Used to transform raw data in the warehouse into clean, reliable, and analytics-ready datasets using SQL.
+## Getting Started
 
-Getting Started
+### Prerequisites
 
-Start the environment:
+* Docker Desktop
+* Astro CLI
+* An Alpha Vantage API Key
 
-    Bash
-    
+### Configuration
+
+1. **Environment Variables**: Create a file named `.env` in the project root. Copy the contents of `.env.example` into it and fill in your `ALPHA_ADVANTAGE_API_KEY`. The rest of the variables are pre-configured for the local environment.
+2. **dbt Profile**: The `dbt/profiles.yml` file is configured to read credentials from the `.env` file. No changes are needed.
+
+### Running the Project
+
+1. **Start the environment** with a single command from your project's root directory:
+
+    ```bash
     astro dev start
+    ```
 
-Create the Minio Bucket:
+2. **Create the Minio Bucket**:
+    * Navigate to the Minio console at `http://localhost:9001`.
+    * Log in with the credentials from your `.env` file (`minioadmin`/`minioadmin`).
+    * Create a new bucket named `test`.
 
-- Navigate to the Minio console at <http://localhost:9001>.
-- Log in with the credentials from your .env file.
-- Create a new bucket named test.
-
-Run the Connection Test:
-
-- Navigate to the Airflow UI at <http://localhost:8080>.
-- Un-pause and trigger the full_stack_connection_test DAG to verify all services are connected.
-
-Documentation and Links
-
-[insert docs]
+3. **Run the Full Pipeline**:
+    * Navigate to the Airflow UI at `http://localhost:8080`.
+    * Log in with `admin` / `admin`.
+    * Un-pause the `ingest_stocks` DAG and trigger it with a manual run. This will kick off the entire automated pipeline.
