@@ -13,29 +13,21 @@ snapshot-paths: ["snapshots"]
 target-path: "target"
 
 models:
-  stock_data_backtesting:
-    # Default materialization for the entire project
-    +materialized: table
-    
     # Configurations for models in the 'source' layer
-    # These models perform light cleaning (i.e. type casting) and are materialized as views
-    source:
-      +materialized: view
+  source:
+    +materialized: view
     
-    # Configurations for models in the 'staging' layer
-    # These models contain the bulk of transformations and are materialized as views
-    staging:
-      +materialized: view
+  # Configurations for models in the 'staging' layer
+  staging:
+    +materialized: view
     
-    # Configurations for models in the 'marts' layer
-    # These tables are for final analysis and reporting
-    marts:
-      +materialized: table
-      +schema: marts
+  # Configurations for models in the 'marts' layer
+  marts:
+    +materialized: table
+    +schema: marts
     
-    # Configurations for models in the 'backtest' layer
-    # Incremental models are key for backtesting to process only new data
-    backtest:
-      +materialized: incremental
-      +unique_key: ['date', 'ticker']
-      +on_schema_change: 'fail' # Prevents pipeline failures from schema changes
+  # Configurations for models in the 'backtest' layer
+  backtest:
+    +materialized: incremental
+    +unique_key: ['date', 'ticker']
+    +on_schema_change: 'fail'
