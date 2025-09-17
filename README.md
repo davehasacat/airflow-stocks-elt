@@ -12,9 +12,7 @@ This version of the project establishes a complete, end-to-end pipeline for a si
 
 The ELT process is orchestrated by three modular and event-driven Airflow DAGs that form a seamless, automated workflow.
 
-#### Successful Airflow Pipeline Run
-<img width="2057" height="245" alt="stocks_elt" src="https://github.com/user-attachments/assets/ee6c11d5-5183-491c-af8e-a4524818aa9f" />
-
+![Pipeline Architecture Diagram](images/stocks_elt_pipeline.png)
 
 1. **`ingest_stocks`**: Extracts daily data from the Alpha Vantage API, lands the raw JSON file in Minio object storage, and then automatically triggers the `load_stocks_from_minio` DAG.
 2. **`load_stocks_from_minio`**: Waits for the file to appear in Minio, parses the raw JSON, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
@@ -24,8 +22,7 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs t
 
 The screenshot below shows a successful, end-to-end run of the entire orchestrated pipeline in the Airflow UI, demonstrating the successful execution of all four DAGs.
 
-#### Successful Airflow Pipeline Run
-<img width="1848" height="1080" alt="Capture" src="https://github.com/user-attachments/assets/46bcf2fb-f9e6-4fb6-a561-b95d3d54463e" />
+![Successful Airflow Pipeline Run](images/stocks_elt_dag_run.png)
 
 ---
 
@@ -83,9 +80,9 @@ The screenshot below shows a successful, end-to-end run of the entire orchestrat
 
 This proof of concept serves as a strong foundation. The next steps for expanding this project include:
 
- - [ ] **Scale Ingestion with Airflow Params**: Parameterize the DAGs to accept a list of tickers, allowing for the ingestion of hundreds of stocks in parallel using Dynamic Task Mapping.
- - [ ] **Implement an Incremental Loading Strategy**: Shift from a "truncate and load" pattern to an "append and merge" pattern to preserve historical data.
- - [ ] **Build Out dbt Marts Layer**: Create final analytical tables, such as weekly/monthly aggregations and technical indicators (e.g., moving averages).
+ -[ ] **Scale Ingestion with Airflow Params**: Parameterize the DAGs to accept a list of tickers, allowing for the ingestion of hundreds of stocks in parallel using Dynamic Task Mapping.
+ -[ ] **Implement an Incremental Loading Strategy**: Shift from a "truncate and load" pattern to an "append and merge" pattern to preserve historical data.
+ -[ ] **Build Out dbt Marts Layer**: Create final analytical tables, such as weekly/monthly aggregations and technical indicators (e.g., moving averages).
 
 ## Documentation
 

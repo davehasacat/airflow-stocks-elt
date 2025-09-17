@@ -1,6 +1,7 @@
 .git
 .env
 .DS_Store
+.vscode
 __pycache__/
 astro
 .venv
@@ -10,3 +11,4 @@ webserver_config.py
 airflow.cfg
 airflow.db
 target
+images
