@@ -59,3 +59,14 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs:
     * Navigate to the Airflow UI at `http://localhost:8080`.
     * Log in with `admin` / `admin`.
     * Un-pause the `ingest_stocks` DAG and trigger it with a manual run. This will kick off the entire automated pipeline.
+
+## Documentation
+
+For more detailed information on the tools and technologies used in this project, please refer to their official documentation:
+
+* **[Apache Airflow Documentation](https://airflow.apache.org/docs/)**
+* **[Astro CLI Documentation](https://www.astronomer.io/docs/astro/cli/overview)**
+* **[Docker Documentation](https://docs.docker.com/)**
+* **[Minio Documentation](https://docs.min.io/)**
+* **[PostgreSQL Documentation](https://www.postgresql.org/docs/)**
+* **[dbt Documentation](https://docs.getdbt.com/)**
