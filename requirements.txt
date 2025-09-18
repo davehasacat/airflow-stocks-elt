@@ -6,6 +6,7 @@ apache-airflow-providers-postgres
 astronomer-cosmos
 dbt-postgres
 minio
+polygon-api-client
 
 requests
 pandas
