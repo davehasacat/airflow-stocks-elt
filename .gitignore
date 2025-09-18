@@ -13,3 +13,4 @@ airflow.db
 target
 images
 notes.txt
+dbt/logs
