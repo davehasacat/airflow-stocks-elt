@@ -15,8 +15,8 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs t
 #### Pipeline Architecture Diagram
 <img width="2057" height="245" alt="stocks_elt_pipeline" src="https://github.com/user-attachments/assets/c1a5e29b-8c1b-4c8b-a9a7-d2a93e46b1fc" />
 
-1. **`ingest_stocks`**: Extracts daily data from the Alpha Vantage API, lands the raw JSON file in Minio object storage, and then automatically triggers the `load_stocks_from_minio` DAG.
-2. **`load_stocks_from_minio`**: Waits for the file to appear in Minio, parses the raw JSON, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
+1. **`stocks_polygon_ingest`**: Extracts daily data from the polygon.io API, lands the raw JSON file in Minio object storage, and then automatically triggers the `stocks_polygon_load` DAG.
+2. **`stocks_polygon_load`**: Waits for the file to appear in Minio, parses the raw JSON, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
 3. **`dbt_run_models`**: Runs the dbt models to transform the raw data into clean, analytics-ready tables (views).
 
 ### Proof of Success
@@ -51,11 +51,11 @@ The screenshot below shows a successful, end-to-end run of the entire orchestrat
 
 * Docker Desktop
 * Astro CLI
-* An Alpha Vantage API Key
+* A Polygon API Key
 
 ### Configuration
 
-1. **Environment Variables**: Create a file named `.env` in the project root. Copy the contents of `.env.example` (if you've created one) into it and fill in your `ALPHA_ADVANTAGE_API_KEY`. The rest of the variables are pre-configured for the local environment.
+1. **Environment Variables**: Create a file named `.env` in the project root. Copy the contents of `.env.example` (if you've created one) into it and fill in your `POLYGON_API_KEY`. The rest of the variables are pre-configured for the local environment.
 2. **dbt Profile**: The `dbt/profiles.yml` file is configured to read credentials from the `.env` file. No changes are needed.
 
 ### Running the Project
