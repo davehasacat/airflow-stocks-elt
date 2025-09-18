@@ -4,12 +4,6 @@ about: Create a pull request to merge your changes.
 title: 'type(scope): [BRIEF DESCRIPTION]'
 ---
 
-## Description
-
-Please provide a clear and concise description of the changes in this pull request.
-
----
-
 ## Related Issue
 
 - Closes # (issue number)
