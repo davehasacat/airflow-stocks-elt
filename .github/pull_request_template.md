@@ -1,32 +1,50 @@
-## Summary
-
-Please provide a brief, high-level summary of the changes in this pull request. What is the goal of this work?
-
+---
+name: Pull Request
+about: Create a pull request to merge your changes.
+title: 'type(scope): [BRIEF DESCRIPTION]'
 ---
 
 ## Related Issue
 
-* Closes # (issue number)
+- Closes # (issue number)
 
 ---
 
-## Acceptance Criteria
+## Type of Change
 
-* [ ]
-* [ ]
+Please check the box that best describes the nature of this change.
+
+- [ ] ✨ **Feature**: A new feature is introduced.
+- [ ] 🐞 **Bug Fix**: A bug is fixed.
+- [ ] 🔨 **Refactor**: Code is restructured without changing functionality.
+- [ ] 🧹 **Chore**: A maintenance task (e.g., updating dependencies, improving CI).
+- [ ] 📚 **Docs**: A documentation change.
 
 ---
 
 ## How to Test
 
-Please provide clear, step-by-step instructions on how to test these changes.
+Please provide clear, step-by-step instructions on how to test these changes. This is the most important part of the pull request.
 
-1.
-2.
-3.
+**1. Step-by-Step Instructions:**
+**2. Visual Proof:**
+
+### Successful Airflow Pipeline Run
+
+(drag and drop your screenshot here)
+
+### Data in Postgres Warehouse
+
+(drag and drop your screenshot here)
 
 ---
 
-## Screenshots
+## Definition of Done
 
-Please provide any relevant screenshots of the successful pipeline run in the Airflow UI, or of the final data in the database.
+Please make sure all of the following tasks are completed before submitting this PR.
+
+- [ ] My code follows the style guidelines of this project.
+- [ ] I have performed a self-review of my own code.
+- [ ] I have commented my code, particularly in hard-to-understand areas.
+- [ ] I have made corresponding changes to the documentation.
+- [ ] My changes generate no new warnings.
