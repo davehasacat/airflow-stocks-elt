@@ -82,9 +82,9 @@ The screenshot below shows a successful, end-to-end run of the entire orchestrat
 
 This proof of concept serves as a strong foundation. The next steps for expanding this project include:
 
- - [ ] **Scale Ingestion with Airflow Params**: Parameterize the DAGs to accept a list of tickers, allowing for the ingestion of hundreds of stocks in parallel using Dynamic Task Mapping.
- - [ ] **Implement an Incremental Loading Strategy**: Shift from a "truncate and load" pattern to an "append and merge" pattern to preserve historical data.
- - [ ] **Build Out dbt Marts Layer**: Create final analytical tables, such as weekly/monthly aggregations and technical indicators (e.g., moving averages).
+* [ ]**Migrate to Polygon.io for Scalable Ingestion**: Transition from Alpha Vantage to a professional-grade API. This includes refactoring the controller DAG to dynamically fetch the entire list of available stock tickers, allowing the pipeline to automatically scale from a few tickers to thousands without code changes.
+* [ ]**Implement an Incremental Loading Strategy**: Evolve the data loading pattern from "truncate and load" to an incremental approach. This will preserve historical data and significantly improve performance by only processing new or updated records on each run.
+* [ ]**Build Out dbt Marts Layer**: With a robust data foundation in place, the final step is to create the analytics layer. This involves building dbt models for key financial indicators (e.g., moving averages, volatility metrics) that will directly feed into back-testing trading strategies.
 
 ## Documentation
 
