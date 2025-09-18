@@ -9,7 +9,7 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 @dag(
     dag_id="ingest_stocks",
     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-    schedule="@daily",
+    schedule=None,
     catchup=False,
     tags=["ingestion", "alphavantage"],
 )
