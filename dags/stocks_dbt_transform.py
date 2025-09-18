@@ -3,13 +3,13 @@ from airflow.decorators import dag
 from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig
 
 @dag(
-    dag_id="dbt_run_models",
+    dag_id="stocks_dbt_transform",
     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
     schedule=None, # This DAG will be triggered by another process
     catchup=False,
     tags=["dbt", "transformation"],
 )
-def dbt_run_models_dag():
+def stocks_dbt_transform_dag():
     """
     This DAG uses the DbtTaskGroup to run all models in the dbt project.
     """
@@ -28,4 +28,4 @@ def dbt_run_models_dag():
         },
     )
 
-dbt_run_models_dag()
+stocks_dbt_transform_dag()
