@@ -17,8 +17,8 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 )
 def stocks_polygon_controller_dag():
     """
-    This DAG fetches a dynamic list of tickers, saves it to Minio to handle
-    large volume, then reads the list to trigger the ingest DAG for each ticker.
+    This DAG fetches a dynamic list of tickers, saves it to Minio, splits it
+    into batches, and triggers a batch processing DAG for each batch file.
     """
     S3_CONN_ID = os.getenv("S3_CONN_ID", "minio_s3")
     BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
@@ -51,10 +51,8 @@ def stocks_polygon_controller_dag():
             
             time.sleep(12)
 
-        # Convert the list to a single string with newlines
         tickers_string = "\n".join(all_tickers)
         
-        # Save the string to a file in Minio
         s3_hook = S3Hook(aws_conn_id=S3_CONN_ID)
         s3_hook.load_string(
             string_data=tickers_string,
@@ -62,31 +60,44 @@ def stocks_polygon_controller_dag():
             bucket_name=BUCKET_NAME,
             replace=True
         )
-        print(f"Successfully saved {len(all_tickers)} tickers to {TICKERS_FILE_KEY} in bucket {BUCKET_NAME}.")
         return TICKERS_FILE_KEY
 
     @task
-    def read_tickers_from_minio(file_key: str) -> list[str]:
+    def split_tickers_into_batches(file_key: str) -> list[str]:
         """
-        Reads the list of tickers from the file in Minio.
+        Reads the full list of tickers from Minio, splits it into smaller
+        batches, and writes each batch back to Minio as a separate file.
+        Returns a list of the new batch file keys.
         """
+        BATCH_SIZE = 1000
         s3_hook = S3Hook(aws_conn_id=S3_CONN_ID)
-        tickers_string = s3_hook.read_key(key=file_key, bucket_name=BUCKET_NAME)
-        # Split the string back into a list of tickers
-        all_tickers = tickers_string.splitlines()
-        
-        # Only process the first 10 tickers for testing purposes.
-        # Remember to remove this slice before deploying to production.
-        # return all_tickers[:10]
 
-    # Define the trigger operator
-    trigger_ingest_dags = TriggerDagRunOperator.partial(
-        task_id="trigger_ingest_dags",
-        trigger_dag_id="stocks_polygon_ingest",
+        tickers_string = s3_hook.read_key(key=file_key, bucket_name=BUCKET_NAME)
+        all_tickers = tickers_string.splitlines()
+
+        batch_file_keys = []
+        for i in range(0, len(all_tickers), BATCH_SIZE):
+            batch = all_tickers[i:i + BATCH_SIZE]
+            batch_string = "\n".join(batch)
+            batch_file_key = f"batches/tickers_batch_{i // BATCH_SIZE + 1}.txt"
+            
+            s3_hook.load_string(
+                string_data=batch_string,
+                key=batch_file_key,
+                bucket_name=BUCKET_NAME,
+                replace=True
+            )
+            batch_file_keys.append(batch_file_key)
+
+        return batch_file_keys
+
+    trigger_batch_processor_dags = TriggerDagRunOperator.partial(
+        task_id="trigger_batch_processor_dags",
+        trigger_dag_id="stocks_batch_processor",  # This is the new intermediate DAG
     ).expand(
-        conf=read_tickers_from_minio(
+        conf=split_tickers_into_batches(
             file_key=fetch_and_save_tickers_to_minio()
-        ).map(lambda ticker: {"ticker": ticker})
+        ).map(lambda file_key: {"batch_file_key": file_key}) # Pass the batch filename
     )
 
 stocks_polygon_controller_dag()
