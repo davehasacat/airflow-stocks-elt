@@ -7,13 +7,13 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 @dag(
-    dag_id="ingest_stocks",
+    dag_id="stocks_polygon_ingest",
     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
     schedule="@daily",
     catchup=False,
     tags=["ingestion", "alphavantage"],
 )
-def ingest_stocks_dag():
+def stocks_polygon_ingest_dag():
     
     @task(retries=2)
     def fetch_and_save_daily_data() -> str:
@@ -64,7 +64,7 @@ def ingest_stocks_dag():
 
     trigger_load_dag = TriggerDagRunOperator(
         task_id="trigger_load_dag",
-        trigger_dag_id="load_stocks_from_minio",
+        trigger_dag_id="stocks_polygon_load",
         wait_for_completion=False,
         conf={"s3_key": "{{ task_instance.xcom_pull(task_ids='upload_to_minio') }}"}
     )
@@ -73,4 +73,4 @@ def ingest_stocks_dag():
     s3_key_from_upload = upload_to_minio(local_file_path=local_path)
     s3_key_from_upload >> trigger_load_dag
 
-ingest_stocks_dag()
+stocks_polygon_ingest_dag()

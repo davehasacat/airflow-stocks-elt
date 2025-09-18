@@ -10,13 +10,13 @@ from airflow.providers.common.sql.operators.sql import SQLTableCheckOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 @dag(
-    dag_id="load_stocks_from_minio",
+    dag_id="stocks_polygon_load",
     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
     schedule=None,
     catchup=False,
     tags=["loading", "minio", "postgres", "dq"],
 )
-def load_stocks_dag(**kwargs):
+def stocks_polygon_load_dag(**kwargs):
     """
     This DAG is event-driven. It waits for a file to appear in Minio,
     loads it into Postgres, runs a data quality check, and then triggers
@@ -86,11 +86,11 @@ def load_stocks_dag(**kwargs):
 
     trigger_dbt_dag = TriggerDagRunOperator(
         task_id="trigger_dbt_dag",
-        trigger_dag_id="dbt_run_models",
+        trigger_dag_id="stocks_dbt_transform",
         wait_for_completion=False,
     )
 
     # --- Task Chaining ---
     wait_for_file_in_minio >> load_minio_json_to_postgres() >> check_table_has_rows >> trigger_dbt_dag
 
-load_stocks_dag()
+stocks_polygon_load_dag()
