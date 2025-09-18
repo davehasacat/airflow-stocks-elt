@@ -93,7 +93,7 @@ def stocks_polygon_controller_dag():
 
     trigger_batch_processor_dags = TriggerDagRunOperator.partial(
         task_id="trigger_batch_processor_dags",
-        trigger_dag_id="stocks_batch_processor",  # This is the new intermediate DAG
+        trigger_dag_id="stocks_polygon_batch_processor",
     ).expand(
         conf=split_tickers_into_batches(
             file_key=fetch_and_save_tickers_to_minio()
