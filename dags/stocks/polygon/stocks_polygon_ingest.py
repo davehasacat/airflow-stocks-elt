@@ -9,43 +9,24 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 @dag(
     dag_id="stocks_polygon_ingest",
     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-    schedule="@daily",
+    schedule=None,
     catchup=False,
-    tags=["ingestion", "alphavantage"],
+    tags=["ingestion", "polygon"],
 )
 def stocks_polygon_ingest_dag():
-    
-    @task(retries=2)
-    def fetch_and_save_daily_data() -> str:
-        TICKER = os.getenv("TICKER", "GOOGL")
-        api_key = os.getenv("ALPHA_ADVANTAGE_API_KEY")
-        output_path = f"/tmp/{TICKER}_daily.json"
+    """
+    [Placeholder] This DAG is triggered by the controller and will
+    eventually fetch data for a single ticker from Polygon.io.
+    """
 
-        if not api_key:
-            raise ValueError("ALPHA_ADVANTAGE_API_KEY environment variable not set.")
+    @task
+    def process_ticker(**kwargs):
+        dag_run = kwargs.get("dag_run")
+        ticker = dag_run.conf.get('ticker', 'N/A')
+        print(f"Received ticker to process: {ticker}")
 
-        url = (
-            "https://www.alphavantage.co/query?"
-            "function=TIME_SERIES_DAILY&"
-            f"symbol={TICKER}&"
-            "outputsize=full&"
-            f"apikey={api_key}"
-        )
-        
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-
-        if "Time Series (Daily)" not in data:
-            print("API did not return Time Series Data. Full response:")
-            print(data)
-            raise ValueError("Alpha Vantage API call did not return the expected time series data.")
-
-        with open(output_path, "w") as f:
-            json.dump(data, f)
-        
-        return output_path
-
+    process_ticker()
+    """
     @task
     def upload_to_minio(local_file_path: str) -> str:
         S3_CONN_ID = os.getenv("S3_CONN_ID")
@@ -72,5 +53,5 @@ def stocks_polygon_ingest_dag():
     local_path = fetch_and_save_daily_data()
     s3_key_from_upload = upload_to_minio(local_file_path=local_path)
     s3_key_from_upload >> trigger_load_dag
-
+    """
 stocks_polygon_ingest_dag()
