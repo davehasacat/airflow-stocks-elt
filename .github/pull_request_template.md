@@ -1,7 +1,7 @@
----
-name: Pull Request
-about: Create a pull request to merge your changes.
+# Pull Request
+
 title: 'type(scope): [BRIEF DESCRIPTION]'
+
 ---
 
 ## Related Issue

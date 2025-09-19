@@ -8,7 +8,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 @dag(
     dag_id="stocks_polygon_batch_processor",
     start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-    schedule=None,
+    schedule=None,  # This DAG is only triggered by other DAGs
     catchup=False,
     tags=["processor", "ingestion", "polygon"],
 )
