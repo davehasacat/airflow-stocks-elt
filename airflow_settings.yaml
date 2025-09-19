@@ -10,8 +10,3 @@ airflow:
     dag_dir_list_interval: 60
     # controls how often an existing DAG file is re-parsed
     min_file_process_interval: 60
-
-  pools:
-    - pool_name: polygon_api_pool
-      pool_slot: 5
-      pool_description: "Pool to limit concurrency to the Polygon.io API (5 requests/minute)"

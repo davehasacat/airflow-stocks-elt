@@ -21,7 +21,7 @@ def stocks_polygon_ingest_dag():
     BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
 
     # Assign this task to the new pool to limit its concurrency to 5.
-    @task(retries=2, pool="polygon_api_pool") 
+    @task(retries=2) 
     def fetch_and_save_daily_data(**kwargs) -> str:
         dag_run = kwargs.get("dag_run")
         ticker = dag_run.conf.get('ticker')
