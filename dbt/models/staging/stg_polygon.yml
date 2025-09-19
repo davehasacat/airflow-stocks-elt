@@ -1,26 +1,31 @@
 version: 2
 
 sources:
-  - name: stocks_polygon # A name for this group of source tables
-    schema: public # The schema where your raw table is loaded
+  - name: polygon
+    schema: public 
     tables:
-      - name: stg_polygon__stock_price_daily # The exact name of the table created by your Airflow DAG
-        description: "Daily stock data loaded from the Polygon.io API."
-        columns:
-          - name: date
-            description: "The date of the stock data."
-            tests:
-              - not_null
-              - unique
-          - name: open_price
-            description: "The opening price for the stock."
-          - name: high_price
-            description: "The highest price for the stock during the day."
-          - name: low_price
-            description: "The lowest price for the stock during the day."
-          - name: close_price
-            description: "The closing price for the stock."
-          - name: volume
-            description: "The trading volume for the day."
-          - name: ticker
-            description: "The stock ticker symbol."
+      - name: source_stocks_polygon_daily_bars # The raw table loaded by Airflow
+        description: "Source table for daily stock aggregate bars (OHLCV) from Polygon.io."
+
+models:
+  - name: stg_polygon__stock_bars_daily # stg table created by stocks_dbt_transform.py DAG
+    description: "Staging model for daily stock bars. Cleans, recasts, and lightly transforms data from the raw source table."
+    columns:
+      - name: date
+        description: "The date of the stock data."
+        tests:
+          - not_null
+      - name: ticker
+        description: "The stock ticker symbol."
+        tests:
+          - not_null
+      - name: open_price
+        description: "The opening price for the stock on that day."
+      - name: high_price
+        description: "The highest price for the stock on that day."
+      - name: low_price
+        description: "The lowest price for the stock on that day."
+      - name: close_price
+        description: "The closing price for the stock on that day."
+      - name: volume
+        description: "The trading volume for the stock on that day."

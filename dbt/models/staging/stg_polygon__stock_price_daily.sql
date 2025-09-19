@@ -1,6 +1,6 @@
 with source as (
 
-    select * from {{ source('stocks_polygon', 'stg_polygon__stock_price_daily') }}
+    select * from {{ source('polygon', 'source_stocks_polygon_daily_bars') }}
 
 ),
 

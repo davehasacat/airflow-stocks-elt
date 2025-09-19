@@ -20,7 +20,7 @@ def stocks_polygon_load_dag():
     S3_CONN_ID = os.getenv("S3_CONN_ID")
     POSTGRES_CONN_ID = os.getenv("POSTGRES_CONN_ID")
     BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
-    TABLE_NAME = "stg_polygon__stock_price_daily"
+    TABLE_NAME = "source_stocks_polygon_daily_bars"
 
     @task
     def load_minio_json_to_postgres(**kwargs):
