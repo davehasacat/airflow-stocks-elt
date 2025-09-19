@@ -17,8 +17,9 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
     tags=["loading", "polygon", "postgres", "dq"],
 )
 def stocks_polygon_load_dag():
-    S3_CONN_ID = os.getenv("S3_CONN_ID")
-    POSTGRES_CONN_ID = os.getenv("POSTGRES_CONN_ID")
+    # --- FIX: Added default values for connection IDs ---
+    S3_CONN_ID = os.getenv("S3_CONN_ID", "minio_s3")
+    POSTGRES_CONN_ID = os.getenv("POSTGRES_CONN_ID", "postgres_dwh")
     BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
     TABLE_NAME = "source_stocks_polygon_daily_bars"
 
@@ -44,12 +45,8 @@ def stocks_polygon_load_dag():
         df['ticker'] = ticker
 
         df = df.rename(columns={
-            'v': 'volume',
-            'o': 'open_price',
-            'c': 'close_price',
-            'h': 'high_price',
-            'l': 'low_price',
-            't': 'timestamp_ms'
+            'v': 'volume', 'o': 'open_price', 'c': 'close_price',
+            'h': 'high_price', 'l': 'low_price', 't': 'timestamp_ms'
         })
 
         df['date'] = pd.to_datetime(df['timestamp_ms'], unit='ms').dt.date
@@ -80,6 +77,7 @@ def stocks_polygon_load_dag():
             rows=df.to_records(index=False).tolist(),
             target_fields=df.columns.tolist()
         )
+        print(f"Successfully loaded {len(df)} rows into {TABLE_NAME} for ticker {ticker}.")
 
     check_table_has_rows = SQLTableCheckOperator(
         task_id="check_table_has_rows",

@@ -49,7 +49,7 @@ def stocks_polygon_controller_dag():
             if next_url:
                 next_url += f"&apiKey={api_key}"
             
-            time.sleep(12)
+            time.sleep(13)
 
         tickers_string = "\n".join(all_tickers)
         
@@ -89,7 +89,9 @@ def stocks_polygon_controller_dag():
             )
             batch_file_keys.append(batch_file_key)
 
-        return batch_file_keys
+        # use 'return batch_file_keys[:1]' slice for testing
+        # uupdate back to 'return batch_file_keys' for dev
+        return batch_file_keys[:1]
 
     trigger_batch_processor_dags = TriggerDagRunOperator.partial(
         task_id="trigger_batch_processor_dags",
