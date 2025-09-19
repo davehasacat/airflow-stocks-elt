@@ -17,7 +17,6 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
     tags=["loading", "polygon", "postgres", "dq"],
 )
 def stocks_polygon_load_dag():
-    # --- FIX: Added default values for connection IDs ---
     S3_CONN_ID = os.getenv("S3_CONN_ID", "minio_s3")
     POSTGRES_CONN_ID = os.getenv("POSTGRES_CONN_ID", "postgres_dwh")
     BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
@@ -54,29 +53,31 @@ def stocks_polygon_load_dag():
         
         pg_hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
         
+        # This ensures the table exists before we try to write to it.
         create_table_sql = f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-            date DATE,
-            ticker VARCHAR(20),
-            open_price NUMERIC(18, 4),
-            high_price NUMERIC(18, 4),
-            low_price NUMERIC(18, 4),
-            close_price NUMERIC(18, 4),
-            volume BIGINT
+            date DATE, ticker VARCHAR(20), open_price NUMERIC(18, 4),
+            high_price NUMERIC(18, 4), low_price NUMERIC(18, 4),
+            close_price NUMERIC(18, 4), volume BIGINT
         );
         """
         pg_hook.run(create_table_sql)
 
-        pg_hook.run(
-            f"DELETE FROM {TABLE_NAME} WHERE date = %s AND ticker = %s;",
-            parameters=(df['date'].iloc[0], ticker)
-        )
-        
-        pg_hook.insert_rows(
-            table=TABLE_NAME,
-            rows=df.to_records(index=False).tolist(),
-            target_fields=df.columns.tolist()
-        )
+        # --- BEST PRACTICE: Use a transaction for idempotent writes ---
+        # This will delete the old record and insert the new one in a single, atomic operation.
+        with pg_hook.get_conn() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    f"DELETE FROM {TABLE_NAME} WHERE date = %s AND ticker = %s;",
+                    (df['date'].iloc[0], ticker)
+                )
+                pg_hook.insert_rows(
+                    table=TABLE_NAME,
+                    rows=df.to_records(index=False).tolist(),
+                    target_fields=df.columns.tolist(),
+                    commit_every=0, # Commit only once at the end
+                    conn=conn # Use the existing connection
+                )
         print(f"Successfully loaded {len(df)} rows into {TABLE_NAME} for ticker {ticker}.")
 
     check_table_has_rows = SQLTableCheckOperator(
