@@ -1,0 +1,13 @@
+version: 2
+
+seeds:
+  - name: connection_test
+    description: "A simple seed file to test the dbt connection to the data warehouse."
+    columns:
+      - name: id
+        description: "A unique identifier."
+        tests:
+          - not_null
+          - unique
+      - name: test_name
+        description: "The name of the test."
