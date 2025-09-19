@@ -1,0 +1,4 @@
+airflow:
+  core:
+    parallelism: 32
+    max_active_runs_per_dag: 32
