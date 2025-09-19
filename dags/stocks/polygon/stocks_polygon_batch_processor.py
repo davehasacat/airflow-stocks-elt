@@ -18,7 +18,8 @@ def stocks_polygon_batch_processor_dag():
     It reads the batch file from Minio and triggers the final ingest DAG
     for each ticker in the batch.
     """
-    S3_CONN_ID = os.getenv("S3_CONN_ID")
+    # --- FIX: Added a default value for the S3 connection ID ---
+    S3_CONN_ID = os.getenv("S3_CONN_ID", "minio_s3")
     BUCKET_NAME = os.getenv("BUCKET_NAME", "test")
 
     @task
@@ -28,23 +29,20 @@ def stocks_polygon_batch_processor_dag():
         The filename is passed via the DAG run configuration.
         """
         dag_run = kwargs.get("dag_run")
-        # Get the batch file key from the controller DAG's conf
         batch_file_key = dag_run.conf.get('batch_file_key')
         if not batch_file_key:
             raise ValueError("Batch file key was not provided in the DAG run configuration.")
 
         s3_hook = S3Hook(aws_conn_id=S3_CONN_ID)
-        print(f"Reading tickers from batch file: {batch_file_key}")
         tickers_string = s3_hook.read_key(key=batch_file_key, bucket_name=BUCKET_NAME)
         
         tickers = tickers_string.splitlines()
         print(f"Found {len(tickers)} tickers in this batch.")
         return tickers
 
-    # This trigger will fan-out again, creating one ingest run per ticker
     trigger_final_ingest_dags = TriggerDagRunOperator.partial(
         task_id="trigger_final_ingest_dags",
-        trigger_dag_id="stocks_polygon_ingest", # worker dag
+        trigger_dag_id="stocks_polygon_ingest",
     ).expand(
         conf=read_tickers_from_batch_file().map(lambda ticker: {"ticker": ticker})
     )

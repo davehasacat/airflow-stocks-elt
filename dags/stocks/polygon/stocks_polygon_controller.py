@@ -49,7 +49,7 @@ def stocks_polygon_controller_dag():
             if next_url:
                 next_url += f"&apiKey={api_key}"
             
-            time.sleep(13)
+            time.sleep(14)
 
         tickers_string = "\n".join(all_tickers)
         
