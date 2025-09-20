@@ -1,30 +1,26 @@
 # Airflow Stocks ELT Project
 
-This project is a complete, containerized ELT (Extract, Load, Transform) environment designed for processing stock data. It uses a modern data stack to orchestrate data pipelines, manage transformations, and store data, providing a robust foundation for financial analysis and backtesting.
-
-## Version: 1.0 (Proof of Concept)
-
-This version of the project establishes a complete, end-to-end pipeline for a single stock ticker. It serves as a proof of concept for the architecture and technology stack. Future versions will focus on scaling the pipeline to handle multiple tickers, implementing more complex transformations, and adding advanced data quality checks and monitoring.
-
----
+This project is a complete, containerized ELT (Extract, Load, Transform) environment designed for processing stock data from the [Polygon.io](https://polygon.io/) API. It uses a modern data stack to orchestrate a highly parallelized and scalable data pipeline, manage transformations with dbt, and store data in a Postgres data warehouse, providing a robust foundation for financial analysis and backtesting.
 
 ## Pipeline Architecture
 
-The ELT process is orchestrated by three modular and event-driven Airflow DAGs that form a seamless, automated workflow.
+The ELT process is orchestrated by three modular and event-driven Airflow DAGs that form a seamless, automated workflow. The architecture is designed for high throughput and scalability, capable of ingesting and processing data for thousands of stock tickers efficiently.
 
-#### Pipeline Architecture Diagram
-<img width="2057" height="245" alt="stocks_elt_pipeline" src="https://github.com/user-attachments/assets/c1a5e29b-8c1b-4c8b-a9a7-d2a93e46b1fc" />
+1. **`stocks_polygon_ingest`**: This DAG fetches a complete list of all available stock tickers from the Polygon.io API. It then splits the tickers into small, manageable batches and dynamically creates parallel tasks to ingest the daily OHLCV data for each ticker, landing the raw JSON files in Minio object storage. This dynamic, batch-based approach allows the DAG to scale to any number of tickers without hitting Airflow's internal limitations.
 
-1. **`stocks_polygon_ingest`**: Extracts daily data from the polygon.io API, lands the raw JSON file in Minio object storage, and then automatically triggers the `stocks_polygon_load` DAG.
-2. **`stocks_polygon_load`**: Waits for the file to appear in Minio, parses the raw JSON, loads it into a raw table in the Postgres data warehouse, runs a data quality check, and then automatically triggers the `dbt_run_models` DAG.
-3. **`dbt_run_models`**: Runs the dbt models to transform the raw data into clean, analytics-ready tables (views).
+2. **`stocks_polygon_load`**: Triggered by the completion of the ingest DAG, this DAG takes the list of newly created JSON files in Minio and, using a similar batching strategy, loads the data in parallel into a raw table in the Postgres data warehouse. This ensures that the data loading process is just as scalable as the ingestion.
+
+3. **`stocks_dbt_polygon_transform`**: Once the raw data has been successfully loaded into the warehouse, this DAG is triggered to run the `dbt build` command. This executes all the dbt models, which transform the raw data into a clean, analytics-ready staging model (`stg_polygon__stock_bars_daily`), and runs data quality tests to ensure the integrity of the transformed data.
 
 ### Proof of Success
 
-The screenshot below shows a successful, end-to-end run of the entire orchestrated pipeline in the Airflow UI, demonstrating the successful execution of all four DAGs.
+The screenshot below shows a successful, end-to-end run of the entire orchestrated pipeline in the Airflow UI, demonstrating the successful execution of all three DAGs.
 
-#### Successful Airflow Pipeline Run
-<img width="1848" height="1080" alt="stocks_elt_dag_run" src="https://github.com/user-attachments/assets/d51d0652-a736-418f-ae50-37f1dca887c3" />
+The data is successfully transformed and available for querying in the data warehouse, as shown by the following query result from the `stg_polygon__stock_bars_daily` table:
+
+```sql
+select * from stg_polygon__stock_bars_daily limit 10;
+```
 
 ---
 
@@ -51,7 +47,7 @@ The screenshot below shows a successful, end-to-end run of the entire orchestrat
 
 * Docker Desktop
 * Astro CLI
-* A Polygon API Key
+* A Polygon API Key _(Note: this project requires a paid API key with unlimited API calls)_
 
 ### Configuration
 
@@ -74,7 +70,7 @@ The screenshot below shows a successful, end-to-end run of the entire orchestrat
 3. **Run the Full Pipeline**:
     * Navigate to the Airflow UI at `http://localhost:8080`.
     * Log in with `admin` / `admin`.
-    * Un-pause the `ingest_stocks` DAG and trigger it with a manual run. This will kick off the entire automated pipeline.
+    * Un-pause the `stocks_polygon_ingest` DAG and trigger it with a manual run. This will kick off the entire automated pipeline.
 
 ---
 
