@@ -16,11 +16,15 @@ The ELT process is orchestrated by three modular and event-driven Airflow DAGs t
 
 The screenshot below shows a successful, end-to-end run of the entire orchestrated pipeline in the Airflow UI, demonstrating the successful execution of all three DAGs.
 
+<img width="1851" height="643" alt="Capture" src="https://github.com/user-attachments/assets/2a60a94b-f985-4c20-93b9-3d13869a9f3d" />
+
 The data is successfully transformed and available for querying in the data warehouse, as shown by the following query result from the `stg_polygon__stock_bars_daily` table:
 
 ```sql
 select * from stg_polygon__stock_bars_daily limit 10;
 ```
+
+<img width="911" height="384" alt="Capture2" src="https://github.com/user-attachments/assets/ec11240d-2e59-4ccf-973b-86c2cde5647c" />
 
 ---
 
