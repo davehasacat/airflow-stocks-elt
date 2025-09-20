@@ -24,10 +24,6 @@ def stocks_polygon_load_dag():
 
     @task
     def get_s3_keys_from_conf(**kwargs) -> list[str]:
-        """
-        Retrieves the list of S3 keys from the DAG run configuration.
-        If the list is empty, the entire DAG is skipped.
-        """
         dag_run = kwargs.get("dag_run")
         s3_keys = dag_run.conf.get('s3_keys')
         if not s3_keys or not isinstance(s3_keys, list):
@@ -36,9 +32,6 @@ def stocks_polygon_load_dag():
 
     @task
     def load_minio_json_to_postgres(s3_key: str):
-        """
-        Reads a single JSON file from MinIO, parses it, and loads the data into Postgres.
-        """
         if not isinstance(s3_key, str):
             raise TypeError(f"Expected s3_key to be a string, but got {type(s3_key)}.")
 
