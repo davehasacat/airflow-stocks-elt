@@ -80,7 +80,7 @@ select * from stg_polygon__stock_bars_daily limit 10;
 
 ## Future Work & Scalability
 
-This proof of concept serves as a strong foundation. The next steps for expanding this project include:
+This project serves as a strong foundation for a robust financial data platform. The next steps for expanding this project include:
 
 - [x] **Migrate to Polygon.io for Scalable Ingestion**: Transition from Alpha Vantage to a professional-grade API. This includes refactoring the controller DAG to dynamically fetch the entire list of available stock tickers, allowing the pipeline to automatically scale from a few tickers to thousands without code changes.
 - [ ] **Implement an Incremental Loading Strategy**: Evolve the data loading pattern from "truncate and load" to an incremental approach. This will preserve historical data and significantly improve performance by only processing new or updated records on each run.
