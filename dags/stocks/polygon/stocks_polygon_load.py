@@ -103,7 +103,7 @@ def stocks_polygon_load_dag():
     # Define the final task to trigger the dbt transformation DAG
     trigger_dbt_dag = TriggerDagRunOperator(
         task_id="trigger_dbt_dag",
-        trigger_dag_id="stocks_dbt_transform",
+        trigger_dag_id="stocks_dbt_polygon_transform",
     )
 
     # Define the DAG's task dependencies
