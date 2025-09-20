@@ -1,12 +1,14 @@
 airflow:
   core:
-    parallelism: 32
+    parallelism: 64
     max_active_runs_per_dag: 32
-    # controls the maximum number of task instances that can be running at the same time for a single DAG
-    max_active_tasks_per_dag: 32
+    max_active_tasks_per_dag: 64
 
   scheduler:
-    # controls how often (in seconds) the Airflow scheduler scans your dags/ folder for new or changed files
-    dag_dir_list_interval: 60
-    # controls how often an existing DAG file is re-parsed
-    min_file_process_interval: 60
+    dag_dir_list_interval: 30
+    min_file_process_interval: 30
+  
+  pools:
+    - name: api_pool
+      slots: 32
+      description: "Pool for controlling API-heavy tasks"
